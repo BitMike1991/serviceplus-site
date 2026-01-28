@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+body {
+  @apply bg-dark text-white scroll-smooth;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Prevent the mobile sticky CTA from covering content */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 92px;
+  }
+}
+
+a {
+  @apply hover:text-accent transition-colors;
+}
