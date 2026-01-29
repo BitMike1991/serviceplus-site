@@ -7,13 +7,46 @@ export default function Contact() {
   const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
   const EMAIL = process.env.NEXT_PUBLIC_EMAIL || "info@serviceplus.plus";
 
-  // ✅ FAST inbound: use FormSubmit now, swap to n8n webhook later
-  // Replace this with your real endpoint:
-  // Example: https://formsubmit.co/YOUR_EMAIL
-  const FORM_ENDPOINT =
-    process.env.NEXT_PUBLIC_FORM_ENDPOINT || `https://formsubmit.co/${EMAIL}`;
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get('name'),
+      phone: formData.get('phone'),
+      email: formData.get('email'),
+      city: formData.get('city'),
+      project: formData.get('project'),
+      message: formData.get('message'),
+      source: 'serviceplus_site',
+      channel: 'web_form',
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        e.target.reset(); // Clear form
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section id="contact" className="py-20 bg-gray-900 text-gray-200">
@@ -84,22 +117,20 @@ export default function Contact() {
           {/* Contact form */}
           <form
             id="formulaire"
-            action={FORM_ENDPOINT}
-            method="POST"
-            encType="multipart/form-data"
-            onSubmit={() => setIsSubmitting(true)}
+            onSubmit={handleSubmit}
             className="bg-gray-800 p-6 rounded-2xl shadow-lg space-y-4"
           >
-            {/* FormSubmit controls (safe + fast) */}
-            <input type="hidden" name="_subject" value="Demande d’estimation — Service Plus (Site Web)" />
-            <input type="hidden" name="_template" value="table" />
-            <input type="hidden" name="_captcha" value="false" />
-            {/* After success: send them back to site with a thank you */}
-            <input type="hidden" name="_next" value="/merci" />
+            {submitStatus === 'success' && (
+              <div className="bg-green-600 text-white p-4 rounded-lg text-center">
+                ✅ Demande envoyée avec succès! Nous vous contacterons bientôt.
+              </div>
+            )}
 
-            {/* BlueWise-ready fields */}
-            <input type="hidden" name="source" value="serviceplus_site" />
-            <input type="hidden" name="channel" value="web_form" />
+            {submitStatus === 'error' && (
+              <div className="bg-red-600 text-white p-4 rounded-lg text-center">
+                ❌ Erreur lors de l'envoi. Veuillez réessayer ou nous appeler directement.
+              </div>
+            )}
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -191,20 +222,13 @@ export default function Contact() {
               />
             </div>
 
-            <div>
-              <label htmlFor="photos" className="block text-sm font-medium mb-1">
-                Photos (recommandé)
-              </label>
-              <input
-                id="photos"
-                name="attachment"
-                type="file"
-                accept="image/*"
-                multiple
-                className="w-full px-3 py-2 rounded-md bg-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-accent file:text-dark file:font-semibold hover:file:bg-primary"
-              />
-              <p className="text-xs text-gray-400 mt-2">
-                Ajoutez 4–8 photos : vue d’ensemble + détails (portes, coins, zones usées).
+            <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+              <p className="text-sm text-gray-300 mb-2">
+                📸 <strong>Photos recommandées</strong>
+              </p>
+              <p className="text-xs text-gray-400">
+                Pour une estimation plus précise, mentionnez dans le message que vous avez des photos disponibles.
+                Nous vous contacterons pour les recevoir par courriel ou SMS.
               </p>
             </div>
 
