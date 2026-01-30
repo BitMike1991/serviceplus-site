@@ -96,7 +96,7 @@ Canal: ${channel || 'web_form'}`;
     const leadResult = await client.query(leadQuery, [
       customerId,                           // customer_id
       name,                                 // name
-      phone,                                // phone (original)
+      normalizedPhone,                      // phone (FIXED: use normalized)
       normalizedPhone,                      // normalized_phone
       phoneLast7,                           // phone_last7
       email || null,                        // email
@@ -111,6 +111,26 @@ Canal: ${channel || 'web_form'}`;
 
     const leadId = leadResult.rows[0]?.id;
     console.log(`✅ Lead created/updated: ID ${leadId}, Name: ${name}, Phone: ${normalizedPhone}`);
+
+    // Trigger n8n workflow for SMS notifications (fire-and-forget)
+    try {
+      fetch('https://automation.bluewiseai.com/webhook/serviceplus-new-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId,
+          name,
+          phone: normalizedPhone,
+          email: email || null,
+          city,
+          project: project || 'Non spécifié',
+          message,
+          source: source || 'serviceplus_site'
+        })
+      }).catch(err => console.error('n8n webhook error (non-blocking):', err));
+    } catch (webhookErr) {
+      console.error('n8n webhook failed (non-blocking):', webhookErr);
+    }
 
     // Send internal notification email via Mailgun
     const domain = process.env.MAILGUN_DOMAIN;
