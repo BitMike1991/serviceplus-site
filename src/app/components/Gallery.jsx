@@ -35,7 +35,7 @@ export default function Gallery() {
       },
       {
         id: "project2",
-        title: "Armoires — finition epoxy premium",
+        title: "Salle de bain — finition epoxy premium",
         location: "Lanaudière",
         tag: "Garantie 25 ans",
         // ⚠️ Tes fichiers project2 n'ont pas "avant/apres".
@@ -53,7 +53,7 @@ export default function Gallery() {
       },
       {
         id: "project3",
-        title: "Cuisine — résultat final haut de gamme",
+        title: "Revêtement extérieur",
         location: "Régions adjacentes",
         tag: "Économie vs remplacement",
         before: [
