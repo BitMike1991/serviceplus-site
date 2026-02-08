@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function Contact() {
+export default function Contact({ source = 'serviceplus_site', defaultProject = 'Armoires de cuisine (époxy)' }) {
   // ✅ Hard-set for fast deploy (you can still override with env later)
   const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
   const EMAIL = process.env.NEXT_PUBLIC_EMAIL || "info@serviceplus.plus";
@@ -23,7 +23,7 @@ export default function Contact() {
       city: formData.get('city'),
       project: formData.get('project'),
       message: formData.get('message'),
-      source: 'serviceplus_site',
+      source: source,
       channel: 'web_form',
     };
 
@@ -199,7 +199,7 @@ export default function Contact() {
                 id="project"
                 name="project"
                 className="w-full px-3 py-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-accent"
-                defaultValue="Armoires de cuisine (époxy)"
+                defaultValue={defaultProject}
               >
                 <option>Armoires de cuisine (époxy)</option>
                 <option>Peinture extérieure</option>
