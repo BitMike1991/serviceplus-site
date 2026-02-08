@@ -22,6 +22,7 @@ export default function NavBar() {
     { name: 'Réalisations', href: '#realisations' },
     { name: 'Approche', href: '#approche' },
     { name: 'Confiance', href: '#confiance' },
+    { name: 'FAQ', href: '#faq' },
     { name: 'Contact', href: '#contact' },
   ];
 
@@ -39,7 +40,7 @@ export default function NavBar() {
           />
           <div className="leading-tight">
             <div className="text-xl font-bold tracking-wide">Service <span className="text-accent">Plus</span></div>
-            <div className="text-xs text-gray-400 uppercase tracking-widest">Entrepreneur général</div>
+            <div className="text-xs text-gray-400 uppercase tracking-widest">Refinition époxy</div>
           </div>
         </a>
         {/* Desktop menu */}

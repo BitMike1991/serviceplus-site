@@ -74,8 +74,8 @@ export default function Confidence() {
               </h3>
 
               <p className="text-gray-300">
-                Pas de page Google (encore) — alors on préfère mieux : une preuve
-                humaine. Vidéo tournée chez le client, juste après les travaux.
+                Une preuve vaut mille mots. Vidéo tournée chez le client,
+                juste après les travaux.
               </p>
 
               <p className="mt-3 text-gray-400 text-sm">

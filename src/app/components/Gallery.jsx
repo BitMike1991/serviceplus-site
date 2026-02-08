@@ -339,7 +339,7 @@ export default function Gallery() {
           </div>
 
           <p className="text-gray-500 text-xs mt-4">
-            Astuce : si certaines photos semblent floues, c’est souvent la résolution d’origine. Utilise “Ouvrir ↗” sur les projets pour voir en grand.
+            Toutes les photos sont prises sur nos chantiers réels.
           </p>
         </div>
       </div>

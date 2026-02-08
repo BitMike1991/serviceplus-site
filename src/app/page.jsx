@@ -1,9 +1,11 @@
 import NavBar from './components/NavBar';
 import Hero from './components/Hero';
+import Comparison from './components/Comparison';
 import Services from './components/Services';
 import Gallery from './components/Gallery';
 import Approach from './components/Approach';
 import Confidence from './components/Confidence';
+import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 
 export default function HomePage() {
@@ -14,10 +16,12 @@ export default function HomePage() {
       <NavBar />
       <main>
         <Hero />
+        <Comparison />
         <Services />
         <Gallery />
         <Approach />
         <Confidence />
+        <FAQ />
         <Contact />
       </main>
 

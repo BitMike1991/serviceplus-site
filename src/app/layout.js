@@ -3,9 +3,18 @@ import './globals.css';
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
-  title: 'Service Plus | Armoires de cuisine & peinture — fini haut de gamme',
+  title: 'Service Plus | Refinition époxy armoires de cuisine — Économisez plus de 20 000 $',
   description:
-    "Rafraîchissement d’armoires de cuisine sans démolition et peinture intérieure/extérieure en Lanaudière et régions adjacentes. Fini premium, durable, économies et garantie jusqu’à 25 ans.",
+    "Refinition époxy d'armoires de cuisine sans démolition au Québec. Résultat comme neuf, garantie 25 ans, à partir de 3 500 $. Économisez 20 000 $+ vs le remplacement. Lanaudière et régions. Estimation gratuite 24h.",
+  keywords: 'refinition armoires cuisine, peinture époxy armoires, armoires de cuisine sans démolition, refinition cuisine Québec, peinture armoires Lanaudière, époxy cuisine, Service Plus',
+  openGraph: {
+    title: 'Service Plus | Refinition époxy armoires de cuisine',
+    description: "Résultat comme neuf, sans démolition, garantie 25 ans. Économisez plus de 20 000 $ vs le remplacement complet.",
+    url: 'https://serviceplus.plus',
+    siteName: 'Service Plus',
+    locale: 'fr_CA',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }) {
