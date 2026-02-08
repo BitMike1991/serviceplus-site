@@ -451,6 +451,51 @@ function WarrantyBox() {
   );
 }
 
+/* ───── February Promo Banner ───── */
+function FebruaryPromo() {
+  const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
+
+  return (
+    <section className="py-10 bg-gradient-to-r from-red-900/40 via-red-800/30 to-red-900/40 border-y border-red-700/40">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
+        <p className="text-red-400 font-extrabold tracking-wide text-sm mb-2 uppercase">
+          Offre spéciale — Février seulement
+        </p>
+
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3">
+          Cuisine de base à{" "}
+          <span className="line-through text-gray-500 text-xl sm:text-2xl md:text-3xl">5 000 $</span>{" "}
+          <span className="text-accent">3 000 $</span>
+        </h2>
+
+        <p className="text-lg md:text-xl text-gray-300 mb-5">
+          + <span className="text-accent font-bold">1 pièce repeinturée en bonus</span>{" "}
+          <span className="text-gray-400">(valeur de 800 $)</span>
+        </p>
+
+        <div className="inline-flex flex-col sm:flex-row gap-3 mb-4">
+          <a
+            href={`tel:${PHONE}`}
+            className="bg-accent text-dark py-3 px-8 rounded-xl font-extrabold hover:bg-primary transition-colors text-center"
+          >
+            Réserver cette offre
+          </a>
+          <a
+            href="#contact"
+            className="border border-accent text-accent py-3 px-8 rounded-xl font-semibold hover:bg-accent hover:text-dark transition-colors text-center"
+          >
+            Demander les détails
+          </a>
+        </div>
+
+        <p className="text-xs text-gray-500">
+          Offre valide pour les projets réservés en février 2026. Cuisine de base standard. Détails sur demande.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 /* ───── Main Page ───── */
 export default function CuisinePage() {
   const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
@@ -460,6 +505,7 @@ export default function CuisinePage() {
       <CuisineNav />
       <main>
         <KitchenHero />
+        <FebruaryPromo />
         <Comparison />
         <KitchenGallery />
         <KitchenProcess />
