@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu, FiX, FiUpload, FiImage } from "react-icons/fi";
 import {
   FaClipboardList,
   FaSprayCanSparkles,
   FaCircleCheck,
   FaShieldHalved,
+  FaWandMagicSparkles,
 } from "react-icons/fa6";
 import Comparison from "../components/Comparison";
 import FAQ from "../components/FAQ";
@@ -451,6 +452,356 @@ function WarrantyBox() {
   );
 }
 
+/* ───── Kitchen Visualizer (AI Color Preview) ───── */
+const COLOR_PRESETS = [
+  { name: "Blanc pur", value: "pure white", hex: "#FFFFFF" },
+  { name: "Gris pâle", value: "light grey", hex: "#D1D5DB" },
+  { name: "Gris charbon", value: "charcoal grey", hex: "#4B5563" },
+  { name: "Noir mat", value: "matte black", hex: "#1F2937" },
+  { name: "Crème", value: "cream / off-white", hex: "#FEF3C7" },
+  { name: "Bleu marine", value: "navy blue", hex: "#1E3A5F" },
+  { name: "Vert forêt", value: "forest green", hex: "#1B4332" },
+  { name: "Bleu poudre", value: "powder blue", hex: "#BFDBFE" },
+];
+
+function KitchenVisualizer() {
+  const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
+  const fileInputRef = useRef(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [customColor, setCustomColor] = useState("");
+  const [resultImage, setResultImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [usesLeft, setUsesLeft] = useState(3);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = useCallback((file) => {
+    if (!file) return;
+    const validTypes = ["image/png", "image/jpeg", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setError("Format accepté : PNG, JPEG ou WebP");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      setError("Image trop grande. Maximum 4 Mo.");
+      return;
+    }
+    setError(null);
+    setUploadedImage(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setResultImage(null);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      setDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      handleFile(file);
+    },
+    [handleFile]
+  );
+
+  const handleGenerate = async () => {
+    if (!uploadedImage) {
+      setError("Téléversez une photo d'abord");
+      return;
+    }
+    const color = selectedColor?.value || customColor.trim();
+    if (!color) {
+      setError("Choisissez une couleur");
+      return;
+    }
+    if (usesLeft <= 0) {
+      setError(
+        "Limite atteinte pour cette session. Appelez-nous pour une consultation gratuite!"
+      );
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setResultImage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", uploadedImage);
+      formData.append("color", color);
+
+      const response = await fetch("/api/visualize", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Erreur lors de la génération");
+        return;
+      }
+
+      setResultImage(data.image);
+      setUsesLeft((prev) => prev - 1);
+    } catch (err) {
+      setError("Erreur de connexion. Réessayez.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetAll = () => {
+    setUploadedImage(null);
+    setPreviewUrl(null);
+    setResultImage(null);
+    setSelectedColor(null);
+    setCustomColor("");
+    setError(null);
+  };
+
+  return (
+    <section id="visualiseur" className="py-20 bg-gray-900 text-gray-200">
+      <div className="max-w-5xl mx-auto px-4 md:px-8">
+        <div className="text-center mb-10">
+          <p className="text-accent font-extrabold tracking-wide text-sm mb-2">
+            OUTIL EXCLUSIF — INTELLIGENCE ARTIFICIELLE
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">
+            Visualisez vos armoires dans la couleur de votre choix
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Téléversez une photo de votre cuisine et choisissez une couleur.
+            Notre IA vous montre le résultat en quelques secondes.
+          </p>
+        </div>
+
+        <div className="bg-gray-800 rounded-2xl p-6 md:p-8 shadow-lg">
+          {/* Step 1: Upload */}
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-white mb-3">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-dark text-xs font-bold mr-2">
+                1
+              </span>
+              Téléversez une photo de votre cuisine
+            </p>
+
+            {!previewUrl ? (
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
+                  dragOver
+                    ? "border-accent bg-accent/10"
+                    : "border-gray-600 hover:border-accent/60"
+                }`}
+              >
+                <FiUpload className="text-3xl text-gray-500 mx-auto mb-3" />
+                <p className="text-gray-400 text-sm">
+                  Glissez votre photo ici ou{" "}
+                  <span className="text-accent font-semibold">
+                    cliquez pour choisir
+                  </span>
+                </p>
+                <p className="text-gray-500 text-xs mt-2">
+                  PNG, JPEG ou WebP — max 4 Mo
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) => handleFile(e.target.files?.[0])}
+                  className="hidden"
+                />
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="relative rounded-xl overflow-hidden border border-gray-700 max-h-[300px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={previewUrl}
+                    alt="Votre cuisine"
+                    className="w-full h-full object-contain max-h-[300px]"
+                  />
+                </div>
+                <button
+                  onClick={resetAll}
+                  className="absolute top-2 right-2 bg-dark/80 text-white rounded-full w-8 h-8 flex items-center justify-center border border-gray-600 hover:border-accent text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Step 2: Pick color */}
+          {previewUrl && (
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-white mb-3">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-dark text-xs font-bold mr-2">
+                  2
+                </span>
+                Choisissez la couleur désirée
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-3">
+                {COLOR_PRESETS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => {
+                      setSelectedColor(c);
+                      setCustomColor("");
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                      selectedColor?.value === c.value
+                        ? "border-accent bg-accent/10 text-white"
+                        : "border-gray-600 text-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <span
+                      className="w-4 h-4 rounded-full border border-gray-500 shrink-0"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 text-sm">ou</span>
+                <input
+                  type="text"
+                  value={customColor}
+                  onChange={(e) => {
+                    setCustomColor(e.target.value);
+                    setSelectedColor(null);
+                  }}
+                  placeholder="Décrivez votre couleur (ex: beige sable, turquoise pâle...)"
+                  className="flex-1 px-3 py-2 rounded-lg bg-gray-700 text-white text-sm border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Generate */}
+          {previewUrl && (selectedColor || customColor.trim()) && (
+            <div className="mb-6">
+              <button
+                onClick={handleGenerate}
+                disabled={isLoading || usesLeft <= 0}
+                className="w-full sm:w-auto bg-accent text-dark py-3 px-8 rounded-xl font-extrabold hover:bg-primary transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="animate-spin inline-block w-5 h-5 border-2 border-dark border-t-transparent rounded-full" />
+                    Génération en cours... (15-30 sec)
+                  </>
+                ) : (
+                  <>
+                    <FaWandMagicSparkles />
+                    Voir le résultat
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                {usesLeft} essai{usesLeft !== 1 ? "s" : ""} restant
+                {usesLeft !== 1 ? "s" : ""}
+              </p>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-900/30 border border-red-700/40 text-red-300 p-4 rounded-lg text-sm mb-6">
+              {error}
+            </div>
+          )}
+
+          {/* Result: Side by side */}
+          {resultImage && (
+            <div className="mt-6">
+              <p className="text-sm font-semibold text-white mb-3">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-dark text-xs font-bold mr-2">
+                  ✓
+                </span>
+                Résultat — aperçu IA
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 text-center">
+                    VOTRE CUISINE ACTUELLE
+                  </p>
+                  <div className="rounded-xl overflow-hidden border border-gray-700">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewUrl}
+                      alt="Avant"
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 text-center">
+                    APERÇU AVEC{" "}
+                    <span className="text-accent uppercase">
+                      {selectedColor?.name || customColor}
+                    </span>
+                  </p>
+                  <div className="rounded-xl overflow-hidden border border-accent/30">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resultImage}
+                      alt="Aperçu IA"
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA after result */}
+              <div className="mt-6 bg-accent/10 border border-accent/30 rounded-xl p-5 text-center">
+                <p className="text-white font-semibold mb-2">
+                  Vous aimez ce que vous voyez?
+                </p>
+                <p className="text-gray-400 text-sm mb-4">
+                  Appelez-nous pour une estimation gratuite — on peut faire
+                  encore mieux en vrai.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <a
+                    href={`tel:${PHONE}`}
+                    className="bg-accent text-dark py-3 px-6 rounded-xl font-semibold hover:bg-primary transition-colors"
+                  >
+                    Appeler maintenant
+                  </a>
+                  <a
+                    href="#contact"
+                    className="border border-accent text-accent py-3 px-6 rounded-xl font-semibold hover:bg-accent hover:text-dark transition-colors"
+                  >
+                    Demander une estimation
+                  </a>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-600 mt-4 text-center">
+                Aperçu généré par intelligence artificielle. Le résultat final
+                peut varier selon les surfaces et la couleur choisie.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ───── February Promo Banner ───── */
 function FebruaryPromo() {
   const PHONE = process.env.NEXT_PUBLIC_PHONE || "+14504998758";
@@ -507,6 +858,7 @@ export default function CuisinePage() {
         <KitchenHero />
         <FebruaryPromo />
         <Comparison />
+        <KitchenVisualizer />
         <KitchenGallery />
         <KitchenProcess />
         <WarrantyBox />
